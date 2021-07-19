@@ -1,0 +1,63 @@
+%------------------------------
+
+\ProvidesPackage{mystyle}
+
+\usepackage[english,greek]{babel}
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm,margin=1in,headsep=0.2in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[export]{adjustbox}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[toc,page]{appendix}
+\usepackage{tabularx,ragged2e}
+
+\usepackage{color}
+\usepackage{xcolor}
+\definecolor{RoyalRed}{RGB}{0, 0, 0}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup Header / Footer                                         %
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{%
+\markboth{#1}{}}
+\fancyhf{}
+\fancyhead[LE,RO]{\ifnum\value{chapter}>0 Κεφάλαιο \thechapter: \leftmark \fi}
+\fancyfoot[LE,RO]{\thepage}
+\usepackage{etoolbox}
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}
+%\usepackage[colorinlistoftodos]{todonotes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup Title format per chapter: "ChapterNumber: ChapterTitle" %
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalsize \huge  \color{black}}%
+  {\flushright\normalsize \color{RoyalRed}%
+   \MakeUppercase{\chaptertitlename}\hspace{1ex}%
+   {\fontfamily{mdugm}\fontsize{60}{60}\selectfont\thechapter}}%
+  {10 pt}%
+  {\bfseries\huge}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\usepackage{breqn}
+%\usepackage{setspace}
+%\usepackage{bm}
+
+
+
+%\allowdisplaybreaks
+%------------------------------
