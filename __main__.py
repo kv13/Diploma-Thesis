@@ -9,12 +9,15 @@
 
 
 This is the main script which is responsible to run all the components for the current project.
-First, the script runs the scraper which is responsible to gather the data from a github repository, make sure you provide the url of the github repo.
-Once the scraper has finished will run some statistics which will decide if the stack traces graph can be produced based on the occurance of each function call.
-Then based on the decision will run the machine learning algorithms sequentially in the following order
+First, the script runs the scraper which is responsible to gather the data from a github 
+repository (make sure you provide the url of the github repo). Once the scraper has finished, it 
+will run some statistics which will decide if the stack traces graph can be produced based on 
+the occurance of each function call.
+
+Then, based on the decision, it will run the machine learning algorithms sequentially in the following order
     ~ Word embedding's creation using skip-grams method. 
       # You can either provide the hype parameters or let the script make hype parameter tuning with respect to AUC metric   
-    ~ Stack traces's embedding's exactly like word embeddings
+    ~ Stack traces's embedding is exactly like word embeddings
     ~ Tag Classification task
       # Dummy Classifier
       # Logistic Regression Classifier

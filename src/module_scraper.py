@@ -1,3 +1,17 @@
+"""
+
+*********************************************
+*      author:Konstantinos Vergopoulos      *
+*                 Jule,2021                 *
+*********************************************
+
+Scraper Module for scraping github repositories. It's focused on scraping issues only.
+The algorithm is looking for the name of the issue and possible tags it got, the description
+and the stack trace if it's given. Also it is looking for who opened it or who closed it 
+if the issue is open or solved respectively. 
+It also includes __mane__ statement to give the choice to run as a standalone script
+
+"""
 # import libraries
 import os
 import re
@@ -37,11 +51,11 @@ def remove_special_ch(text):
         text[i] = text[i].replace('\n',' ')
         text[i] = text[i].replace('\t',' ')
         text[i] = re.sub(r"<.*?>"," ",text[i])
-        # maybe better solution is <[^<>]+> matches any character except < or > 
+        # maybe a better solution is <[^<>]+> which matches any character except < or > 
         # one or more times included inside < and >
 
 
-# function to search all the page for stack trace
+# function to search the entire page for stack trace
 def search_all_page(stack_trace,page):
     temp = page.find_all('div',class_='edit-comment-hide')
     for i in temp:
@@ -64,7 +78,7 @@ def find_desc(each,base_url,description,stack_trace,is_bug):
     # find description and the stack trace(if any)
     calculate_desc(temp_2,description,stack_trace,1)
 
-    # search all the page for a stack trace
+    # search the entire page for a stack trace
     if stack_trace == [] and is_bug == 1:
         search_all_page(stack_trace,dom)
     
@@ -150,7 +164,7 @@ def scraping_process(query_url):
             # real scraping begins
             # search all issues per page
             for each in all:
-                # find tags and who open the issue
+                # find tags and who opens the issue
                 tags = []
                 find_tags(tags,each)
                 
@@ -161,7 +175,7 @@ def scraping_process(query_url):
                         is_bug     = 1
                         total_bugs = total_bugs+1
                 
-                # find description, stack trace and who closed
+                # find description, stack trace and who closed the issue
                 description   = []
                 stack_trace   = []
                 who_closed_it = find_desc(each,base_url,description,stack_trace,is_bug)
@@ -209,7 +223,7 @@ def main(query_url):
     print("Total stack traces in the repo", total_traces)
 
 
-# provide the main call in order so it can be executed stadalone
+# provide the main call in order to be able to run as a standalone script
 if __name__ == "__main__" :
 
     # github repository url
