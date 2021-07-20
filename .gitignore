@@ -1,0 +1,7 @@
+#exclude data folders
+data/*
+data1/*
+data2/*
+#exclude debugging files
+outputs/*
+results/*
