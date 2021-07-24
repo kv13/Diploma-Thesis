@@ -215,7 +215,7 @@ def initializing(query_url):
     total_issues,total_bugs,total_traces = scraping_process(query_url)
 
 
-    # print some statistics
+    # print some statistics #
     print("Total issues in the repo",       total_issues)
     print("Total bugs in the repo",         total_bugs)
     print("Total stack traces in the repo", total_traces)
