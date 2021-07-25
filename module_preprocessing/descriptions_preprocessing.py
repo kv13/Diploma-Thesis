@@ -104,13 +104,12 @@ def split_dataset(descriptions,valid_size,test_size,min_size):
     return valid_set,test_set
 
 
-def data_preprocessing():
+def data_preprocessing(dir_path = 'data'):
     
     # the first time the below command should run to download stopwords
     # nltk.download('stopwords')
 
     # define necessary parameters
-    dir_path         = 'data'
     raw_descriptions = []
     min_size         = 10
     
@@ -141,12 +140,6 @@ def data_preprocessing():
     save_file(valid_set,          'outputs/c_d_validation.json')
     save_file(clean_descriptions, 'outputs/c_d_train.json')
     
-    print(test_set[0])
-    print(test_set[1])
-    print(test_set[10])
-    print(test_set[195])
-    print(test_set[500])
-
     # print some statistics #
     print("total unique descriptions", total_desc)
     print("size of train set"        , len(clean_descriptions))
