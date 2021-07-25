@@ -27,14 +27,14 @@ Then, based on the decision, it will run the machine learning algorithms sequent
 import argparse
 import module_scraper.scraper as scraper
 from module_preprocessing import descriptions_preprocessing as dp
+from module_preprocessing import vocabulary_processes as vp
 
 if __name__ == "__main__" :
-
+  # still need a lot of work the main func to be complete.
   # %%%%%%%%%%% create an easy command line interface %%%%%%%%%%%
   parser = argparse.ArgumentParser()
-  parser.add_argument("-v" , "--verbose", help = "increase output verbosity")
-  parser.add_argument("-a" , "--all"    , action = "store_true", help = "run all modules")
-  parser.add_argument("-s" , "--scraper", type = str, help = "use only the scraper, provide the url")
+  parser.add_argument("-a", "--all",     action = "store_true", help = "run all modules")
+  parser.add_argument("-s", "--scraper", type = str, help = "use the module scraper, provide the url as command line argument")
   parser.add_argument("-p", "--preprocessing", action = "store_true", help = "omit scraping and move on data pre-processing")
   args = parser.parse_args()
   # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,8 +44,12 @@ if __name__ == "__main__" :
     query_url = f"https://github.com/cgeo/cgeo/issues?page=1&q=is%3Aissue+is%3Aclosed"
     # scraping the github repo
     scraper.initializing(query_url)
+    
     # clean and split data into validation,test and training set
     dp.data_preprocessing()
+    
+    # create vocabulary and corpus for words
+    vp.vocabulary_processes.create_vocabulary_corpus('words')
   
   elif args.scraper:
     # run only the scraper with a custom url
@@ -54,4 +58,5 @@ if __name__ == "__main__" :
   
   elif args.preprocessing:
     dp.data_preprocessing()
+    vp.create_vocabulary_corpus('words')
   
