@@ -1,4 +1,4 @@
-import math
+import os
 import time
 import random
 import numpy as np
@@ -14,6 +14,23 @@ from tensorflow.keras import layers
 from tensorflow.keras import initializers
 
 
+def save_logs(epoch,p_time,auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate):
+    with open("outputs/logs.txt","a") as file:
+        file.write("parameter's value: min occurance %s, skip window %s, embedding dim %s, num sampled %s, learning rate %s \n"%(str(min_occurance),str(skip_window),str(embedding_dim),str(num_sampled),str(learning_rate)))
+        file.write("total time in sec %s and total epochs %s \n"%(str(p_time),str(epoch)))
+        file.write("Validation AUC: %s \n"%(str(auc)))
+        file.write("Testing AUC %s \n"%(str(t_auc)))
+
+
+def save_embeddings(embedding_matrix):
+    # make sure the directory exists
+    directory = "results"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    file_name = directory + '/' + 'word_embeddings.txt'
+    np.savetxt(file_name,embedding_matrix,fmt = '%.8f')
+
+
 def load_all_data():
     corpus = vp.load_corpus('words')
     corpus_indexes = [w for w in range(len(corpus))] 
@@ -27,13 +44,18 @@ def load_all_data():
         for value in v_dict2[key][0]:
             t_batch.append(key)
             t_label.append(value)
-
+    
     v_batch = np.reshape(t_batch,(len(t_batch),))
     v_label = np.reshape(t_label,(len(t_label),1))
 
     # load testing set
     testing_dict = vp.load_test_pairs('words','testing_pairs.pkl')
-    return corpus,corpus_indexes,v_dict,v_batch,v_label,testing_dict
+    
+    vocab_dict      = vp.load_vocabulary('words')
+    vocabulary_size = len(vocab_dict)-1
+
+    return corpus,corpus_indexes,vocabulary_size,v_dict,v_batch,v_label,testing_dict
+
 
 def generate_batch(corpus_data,corpus_indexes,batch_size):
     
@@ -156,15 +178,119 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
         print("training time in seconds %s "%(str(total_time)))
         print("total epochs was",epoch+1)
         
-    return normalized_embedding_matrix
+    return normalized_embedding_matrix,total_time,epoch+1
 
 
-def word_embeddings_creation(batch_size = 2048, skip_window=1, embedding_dim=64, num_sampled=64, learning_rate=0.01):
+def word_embeddings_creation(batch_size = 2048, skip_window=1, embedding_dim=64, num_sampled=64, learning_rate=0.1):
 
     # load all important data
-    corpus,corpus_indexes,v_dict,v_batch,v_label,testing_dict = load_all_data()
+    corpus,corpus_indexes,vocabulary_size,v_dict,v_batch,v_label,testing_dict = load_all_data()
 
-    # actual training    
-    embedding_matrix = model_def_cpu(corpus,corpus_indexes,batch_size,skip_window,embedding_dim,num_sampled,learning_rate,v_batch,v_label)
+    # actual training
+    print("training starts with parameters vocabulary size",vocabulary_size," skip_window:",
+            skip_window," embedding dim",embedding_dim," num sampled:",num_sampled," learning_rate:",learning_rate)
 
-    return embedding_matrix
+    embedding_matrix,m_time,m_epoch = model_def_cpu(corpus,corpus_indexes,batch_size,skip_window,
+                                                    embedding_dim,num_sampled,learning_rate,vocabulary_size,v_batch,v_label)
+
+    # model validation
+    v_auc = model_validation_v2(embedding_matrix,v_dict)
+    print("Words embeddings model AUC on validation set:",v_auc)
+
+    t_auc = model_validation_v2(embedding_matrix, testing_dict)
+    print("Words embeddings model AUC on test set:",t_auc)
+
+    # save embeddings matrix
+    save_embeddings(embedding_matrix)
+
+
+def hyper_parameters_estimation(batch_size = 2048):
+    
+    # fixed parameters:
+    unk_item    = "UNK"
+    true_neigh  = 8
+    false_neigh = 30
+    valid_w     = 80
+    valid_w2    = 70
+    test_w      = 100
+
+    # initialize variables
+    b_t_auc         = float('-inf')
+    b_v_auc         = float('-inf')
+    b_min_occurance = -1
+    b_skip_window   = -1
+    b_embedding_dim = -1
+    b_num_sampled   = -1
+    b_learning_rate = -1
+
+    # load data
+    train_set      = vp.load_dataset('words', 'train.json')
+    validation_set = vp.load_dataset('words', 'validation.json')
+    test_set       = vp.load_dataset('words', 'test.json')
+
+    # run estimations
+    for min_occurance in [1,2,3,4,5,6,7,8,9,10]:
+
+        # create vocabulary based on min_occurance parameter
+        train_set_id,valid_set_id,test_set_id,vocab_dict = vp.create_vocabulary(train_set, validation_set, test_set, 'words', min_occurance, unk_item)
+        vocabulary_size = len(vocab_dict)-1
+        del vocab_dict
+
+        for skip_window in [1,2,3,4,5]:
+            # create corpus based on skip_window parameter
+            corpus         = vp.create_corpus(train_set_id,skip_window)
+            corpus_indexes = [w for w in range(len(corpus))] 
+            
+            # compute testing and validation pairs based on test_set_id, valid_set_id
+            _,test_dict    = vp.create_testing_dict(test_set_id , 4, test_w , 0       , true_neigh, false_neigh)
+            v_dict2,v_dict = vp.create_testing_dict(valid_set_id, 4, valid_w, valid_w2, true_neigh, false_neigh)
+
+            t_batch  = []
+            t_label  = []
+            for key in v_dict2:
+                for value in v_dict2[key][0]:
+                    t_batch.append(key)
+                    t_label.append(value)
+    
+            v_batch = np.reshape(t_batch,(len(t_batch),))
+            v_label = np.reshape(t_label,(len(t_label),1))
+
+            for embedding_dim in [32,64,128]:
+                for num_sampled in [16,32,64]:
+                    for learning_rate in [0.01,0.1,1]:
+                        
+                        # actual training
+                        print("training starts with parameters vocabulary size", vocabulary_size," skip_window:", skip_window,
+                        "min occurance", min_occurance," embedding dim", embedding_dim," num sampled:", num_sampled,
+                        " learning_rate:", learning_rate)
+
+                        # compute embeddings
+                        embedding_matrix,m_time,m_epoch = model_def_cpu(corpus,corpus_indexes,batch_size,
+                                                                        skip_window,embedding_dim,num_sampled,
+                                                                        learning_rate,vocabulary_size,v_batch,v_label)
+                        
+                        # compute auc
+                        v_auc = model_validation_v2(embedding_matrix,v_dict)
+                        t_auc = model_validation_v2(embedding_matrix,test_dict)
+
+                        if v_auc > b_v_auc and t_auc > b_t_auc:
+                            b_v_auc = v_auc
+                            b_t_auc = t_auc
+                            b_min_occurance = min_occurance
+                            b_skip_window   = skip_window
+                            b_embedding_dim = embedding_dim
+                            b_num_sampled   = num_sampled
+                            b_learning_rate = learning_rate
+
+                        save_logs(m_epoch,m_time,v_auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate)
+
+                # sleep some time between neural network training to avoid overheating issues
+                time.sleep(60)
+            time.sleep(60)
+    
+    print("best parameters: min_occurance",b_min_occurance," skip_window",b_skip_window," embedding_dim",b_embedding_dim,
+          " num_sampled", b_num_sampled," learning_rate",b_learning_rate) 
+    print("best validation AUC", b_v_auc)
+    print("best testing AUC"   , b_t_auc)                  
+
+
