@@ -25,17 +25,22 @@ Then, based on the decision, it will run the machine learning algorithms sequent
 
 """
 import argparse
+
+from nltk.corpus.reader.chasen import test
 import module_scraper.scraper as scraper
-from module_preprocessing import descriptions_preprocessing as dp
+from module_embeddings import word_embeddings as wm
 from module_preprocessing import vocabulary_processes as vp
+from module_preprocessing import descriptions_preprocessing as dp
+
 
 if __name__ == "__main__" :
-  # still need a lot of work the main func to be complete.
+  # still need a lot of work to be complete.
   # %%%%%%%%%%% create an easy command line interface %%%%%%%%%%%
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--all",     action = "store_true", help = "run all modules")
   parser.add_argument("-s", "--scraper", type = str, help = "use the module scraper, provide the url as command line argument")
   parser.add_argument("-p", "--preprocessing", action = "store_true", help = "omit scraping and move on data pre-processing")
+  parser.add_argument("-hw","--hyperparametertuning",action="store_true",help="hype parameter tuning for word embeddings model")
   args = parser.parse_args()
   # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
@@ -57,6 +62,11 @@ if __name__ == "__main__" :
     scraper.initializing(query_url)
   
   elif args.preprocessing:
+    print("edw mpenei???")
     dp.data_preprocessing()
     vp.create_vocabulary_corpus('words')
+
+  elif args.hyperparametertuning:
+    wm.hyper_parameters_estimation()
   
+
