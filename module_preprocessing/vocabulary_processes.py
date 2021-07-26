@@ -4,6 +4,7 @@ import pickle
 import collections
 import numpy as np
 
+
 def load_dataset(mode,file_name):
     dir_path = 'outputs'
     if mode == 'words':
@@ -16,6 +17,7 @@ def load_dataset(mode,file_name):
     else:
         raise Exception("Error Occured")
 
+
 def save_corpus(corpus,mode):
     # make sure the directory exists
     directory = "outputs"
@@ -23,6 +25,7 @@ def save_corpus(corpus,mode):
         os.makedirs(directory)
     file_name = directory+'/'+mode + "_corpus.txt" 
     np.savetxt(file_name,corpus,fmt="%d")
+
 
 def load_corpus(mode):
     file_name = 'outputs/' + mode + '_corpus.txt'
@@ -39,6 +42,21 @@ def save_vocabulary(w_dict,mode):
     with open(os.path.join(directory,file_name),"w") as file:
         for key in w_dict:
             file.write("%s, %s \n"%(key,str(w_dict[key])))
+
+
+def load_vocabulary(mode):
+    
+    file_name = 'outputs/' + mode + '_vocabulary.txt'
+    temp_dict = dict()
+    
+    with open(file_name) as file:
+        lines = file.readlines()
+        for line in lines:
+            temp   = str(line)
+            values = temp.split(',')
+            temp_dict[values[0]] = int(values[1].replace("\n",""))
+    
+    return temp_dict
 
 
 def save_test_pairs(test_dict,mode,file_name):
@@ -270,10 +288,7 @@ def create_vocabulary(train_set, validation_set, test_set, mode, min_occurance,u
     valid_set_id = [[f_w2id.get(func,-2) for func in i] for i in validation_set]
     test_set_id  = [[f_w2id.get(func,-2) for func in i] for i in test_set ]
 
-    # save the vocabulary
-    save_vocabulary(f_w2id,mode)
-
-    return train_set_id, valid_set_id, test_set_id
+    return train_set_id, valid_set_id, test_set_id,f_w2id
 
     
 
@@ -290,8 +305,11 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
     test_set       = load_dataset(mode, 'test.json')
     
     # create vocabulary 
-    train_set_id,valid_set_id,test_set_id = create_vocabulary(train_set, validation_set, test_set, mode, min_occurance,unk_item)
+    train_set_id,valid_set_id,test_set_id,vocab_dict = create_vocabulary(train_set, validation_set, test_set, mode, min_occurance,unk_item)
     
+    # save the vocabulary
+    save_vocabulary(vocab_dict,mode)
+
     # create corpus with training pairs
     corpus         = create_corpus(train_set_id,skip_window)
 
@@ -315,5 +333,6 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
 
     # create validation pairs
     v_dict2,v_dict = create_testing_dict(valid_set_id,min_occur,valid_w,valid_w2,true_neigh,false_neigh)
-    save_test_pairs(v_dict,mode,'validation_pairs')
-    save_test_pairs(v_dict2,mode,'validation2_pairs')
+    
+    save_test_pairs(v_dict , mode, 'validation_pairs')
+    save_test_pairs(v_dict2, mode, 'validation2_pairs')
