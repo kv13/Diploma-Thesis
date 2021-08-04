@@ -62,11 +62,11 @@ if __name__ == "__main__" :
     scraper.initializing(query_url)
   
   elif args.preprocessing:
-    print("edw mpenei???")
     dp.data_preprocessing()
     vp.create_vocabulary_corpus('words')
 
   elif args.hyperparametertuning:
     wm.hyper_parameters_estimation()
   
-
+  #vp.create_vocabulary_corpus('words',skip_window = 2, min_occurance = 3)
+  wm.word_embeddings_creation(skip_window = 2, embedding_dim=64, num_sampled = 64, learning_rate=0.1)
