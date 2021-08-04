@@ -3,6 +3,7 @@ import json
 import pickle
 import collections
 import numpy as np
+from numpy.random import multivariate_normal
 
 
 def load_dataset(mode,file_name):
@@ -75,7 +76,7 @@ def load_test_pairs(mode,file_name):
     return testing_dict
 
 
-def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,false_neigh,skip_window=2):
+def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,false_neigh,skip_window=1):
     
     # numerate all words in the dataset.
     temp_list = [value for item in test_set for value in item]
@@ -327,6 +328,7 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
     elif mode == 'funcs':
         min_occur = 2
     
+    min_occur = 1
     _,test_dict  = create_testing_dict(test_set_id,min_occur,test_w,0,true_neigh,false_neigh)
     save_test_pairs(test_dict,mode,'testing_pairs')
     del test_dict
