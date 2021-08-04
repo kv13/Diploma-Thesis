@@ -1,5 +1,6 @@
 import os
 import time
+import math
 import random
 import numpy as np
 from random import seed
@@ -121,8 +122,9 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
         X_embed   = tf.nn.embedding_lookup(embedding,X_train)
         
         # create variables for the loss function
-        nce_weights = tf.Variable(tf.truncated_normal([vocabulary_size,embedding_dim],stddev=1.0))
+        nce_weights = tf.Variable(tf.truncated_normal([vocabulary_size,embedding_dim],stddev=1.0 ))
         #nce_weights = tf.Variable(initializer(shape=(vocabulary_size,embedding_dim)))
+
         nce_biases  = tf.Variable(tf.zeros([vocabulary_size]))
     
     loss_func = tf.reduce_sum(tf.nn.nce_loss(weights = nce_weights,biases =nce_biases,labels = Y_train,
@@ -145,6 +147,7 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
         min_emb_matrix     = np.zeros((vocabulary_size,embedding_dim))
         # patience step 
         step = 2*skip_window*batch_size/len(corpus_indexes)
+        print("step is ",step)
         patience_remaining = 100
         
         start_time = time.time()
@@ -229,7 +232,7 @@ def hyper_parameters_estimation(batch_size = 2048):
     test_set       = vp.load_dataset('words', 'test.json')
 
     # run estimations
-    for min_occurance in [1,2,3,4,5,6,7,8,9,10]:
+    for min_occurance in [3,4,5,6,7,8,9,10]:
 
         # create vocabulary based on min_occurance parameter
         train_set_id,valid_set_id,test_set_id,vocab_dict = vp.create_vocabulary(train_set, validation_set, test_set, 'words', min_occurance, unk_item)
@@ -257,7 +260,7 @@ def hyper_parameters_estimation(batch_size = 2048):
 
             for embedding_dim in [32,64,128]:
                 for num_sampled in [16,32,64]:
-                    for learning_rate in [0.01,0.1,1]:
+                    for learning_rate in [0.01,0.1]:
                         
                         # actual training
                         print("training starts with parameters vocabulary size", vocabulary_size," skip_window:", skip_window,
