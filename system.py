@@ -25,13 +25,14 @@ Then, based on the decision, it will run the machine learning algorithms sequent
 
 """
 import argparse
+import enum
 
 from nltk.corpus.reader.chasen import test
 import module_scraper.scraper as scraper
 from module_embeddings import word_embeddings as wm
 from module_preprocessing import vocabulary_processes as vp
 from module_preprocessing import descriptions_preprocessing as dp
-
+from module_preprocessing import stacktraces_preprocessing  as sp
 
 if __name__ == "__main__" :
   # still need a lot of work to be complete.
@@ -50,7 +51,8 @@ if __name__ == "__main__" :
     # scraping the github repo
     scraper.initializing(query_url)
     
-    # clean and split data into validation,test and training set
+    # clean and split descriptions data into 
+    # validation,test and training set
     dp.data_preprocessing()
     
     # create vocabulary and corpus for words
@@ -62,11 +64,20 @@ if __name__ == "__main__" :
     scraper.initializing(query_url)
   
   elif args.preprocessing:
+
+    # descriptions pre-processing
     dp.data_preprocessing()
     vp.create_vocabulary_corpus('words')
+
+    # stack traces pre-processing
+    sp.stacktraces_preprocessing()
 
   elif args.hyperparametertuning:
     wm.hyper_parameters_estimation()
   
+
   #vp.create_vocabulary_corpus('words',skip_window = 2, min_occurance = 3)
-  wm.word_embeddings_creation(skip_window = 2, embedding_dim=64, num_sampled = 64, learning_rate=0.1)
+  #wm.word_embeddings_creation(skip_window = 2, embedding_dim=64, num_sampled = 64, learning_rate=0.1)
+
+  sp.stacktraces_preprocessing()
+  vp.create_vocabulary_corpus_test('funcs')
