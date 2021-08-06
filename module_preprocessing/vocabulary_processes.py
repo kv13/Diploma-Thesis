@@ -9,12 +9,15 @@ from numpy.random import multivariate_normal
 def load_dataset(mode,file_name):
     dir_path = 'outputs'
     if mode == 'words':
-        file_name = 'c_d_'+file_name
+        file_name = 'c_d_' + file_name
         with open(os.path.join(dir_path,file_name),'r') as json_file:
             custom_set = json.load(json_file)
             return custom_set
     elif mode =='funcs':
-        pass
+        file_name = 'c_s_' + file_name
+        with open(os.path.join(dir_path,file_name),'r') as json_file:
+            custom_set = json.load(json_file)
+            return custom_set
     else:
         raise Exception("Error Occured")
 
@@ -321,13 +324,9 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
     save_corpus(corpus,mode)
 
     # create testing pairs
-    # for stack traces test pairs min occurance for each function call is hardcoded at 2, 
-    # because the dataset is small.
-    if mode == 'words':
-        min_occur = min_occurance
-    elif mode == 'funcs':
-        min_occur = 2
-    
+    # for both stack traces and word embeddings
+    # min_occur is hardcoded to 1, because it's
+    # the optimal value.
     min_occur = 1
     _,test_dict  = create_testing_dict(test_set_id,min_occur,test_w,0,true_neigh,false_neigh)
     save_test_pairs(test_dict,mode,'testing_pairs')
@@ -338,3 +337,17 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
     
     save_test_pairs(v_dict , mode, 'validation_pairs')
     save_test_pairs(v_dict2, mode, 'validation2_pairs')
+
+def create_vocabulary_corpus_test(mode, skip_window=1, min_occurance=1, unk_item = "UNK", 
+                            true_neigh = 8, false_neigh = 30, valid_w=80,valid_w2=70,test_w=100):
+    
+    # load train, validation and testing set
+    train_set      = list()
+    validation_set = list()
+    test_set       = list()
+
+    train_set      = load_dataset(mode, 'train.json')
+    validation_set = load_dataset(mode, 'validation.json')
+    test_set       = load_dataset(mode, 'test.json')
+    print("done")
+

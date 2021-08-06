@@ -136,8 +136,8 @@ def data_preprocessing(dir_path = 'data'):
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     
-    save_file(test_set,           'outputs/c_d_test.json')
-    save_file(valid_set,          'outputs/c_d_validation.json')
+    save_file(test_set          , 'outputs/c_d_test.json')
+    save_file(valid_set         , 'outputs/c_d_validation.json')
     save_file(clean_descriptions, 'outputs/c_d_train.json')
     
     # print some statistics #
