@@ -123,5 +123,3 @@ def stacktraces_preprocessing(dir_path = 'data'):
     dp.save_file(train_set     , 'outputs/c_s_train.json')
     dp.save_file(validation_set, 'outputs/c_s_validation.json')
     dp.save_file(test_set      , 'outputs/c_s_test.json')
-
-    
