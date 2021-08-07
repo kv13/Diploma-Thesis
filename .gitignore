@@ -8,7 +8,7 @@ outputs/*
 results/*
 
 #exclude pycache files
-**/__pycache_
+**/__pycache__
 
 #exclude jupyter's checkpoints
 **/.ipynb_checkpoints
