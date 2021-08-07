@@ -6,3 +6,6 @@ data2/*
 #exclude debugging files
 outputs/*
 results/*
+
+#exclude pycache files
+**/__pycache__
