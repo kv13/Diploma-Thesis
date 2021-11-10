@@ -1,8 +1,6 @@
 # Thesis
 **"Analyzing code bugs based on method call graphs"**
 
-Author: Konstantinos Vergopoulos 
-
 ## Abstract
 The increasing size and complexity of modern software projects often leads to the appearance of runtime errors (crashes), for instance due to coding inaccuracies or unforeseen use cases. Since errors affect software usability, quickly dealing with them has become an important maintenance task tied to the success of software projects. At the same time, processes for parsing user feedback, for example by dedicated teams, to understand errors or other bags and initiate maintenance operations can prove time-consuming. To mitigate associated costs, an emerging trend is to automate (parts of) error understanding with machine learning systems, for example that perform automatic tagging.\
 In this thesis, we focus on understanding errors through extracted latent representations; these can be inputted in machine learning systems to predict error qualities, such as recommending which tags errors should obtain. To achieve this, existing approaches in the broader scope of automated bug understanding make use of natural language processing techniques, such as word embeddings, to understand feedback texts. However, in the case of errors, we propose that available stack traces leading up to crashing code segments also capture useful coding semantics in the form of paths within function call graphs. Thus, we investigate whether graph embeddings---extracted from error stack traces---can be used to obtain a better understanding of errors.
