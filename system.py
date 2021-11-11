@@ -52,5 +52,5 @@ if __name__ == "__main__" :
   #sm.hyper_parameters_estimation()
 
   # run classifiers 
-  tags, df_tags, issues_embeddings = classifiers.bugs_preprocessing()
+  tags, df_tags, issues_embeddings = classifiers.bugs_preprocessing(use_words = True, use_stacks = True)
   classifiers.run_classifiers(tags, df_tags, issues_embeddings)

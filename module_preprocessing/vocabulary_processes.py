@@ -27,7 +27,7 @@ def save_corpus(corpus,mode):
     directory = "outputs"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    file_name = directory+'/'+mode + "_corpus.txt" 
+    file_name = directory + '/' + mode + "_corpus.txt" 
     np.savetxt(file_name,corpus,fmt="%d")
 
 
@@ -79,7 +79,7 @@ def load_test_pairs(mode,file_name):
     return testing_dict
 
 
-def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,false_neigh,skip_window=1):
+def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,false_neigh,skip_window):
     
     # numerate all words in the dataset.
     temp_list = [value for item in test_set for value in item]
@@ -89,7 +89,7 @@ def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,f
     # list temp_sentences now is useless
     del temp_list
     
-    # remove rare words
+    # remove rare items
     count[:] = [e for e in count if e[1]>=min_occurance]
     indexes  = [i for i in range(len(count)) if count[i][0] != -2]
     
@@ -108,7 +108,7 @@ def create_testing_dict(test_set,min_occurance,num_words,num_words2,true_neigh,f
         return w_dict2,w_dict
     
     else:
-        # test on the "num_words" most frequent words
+        # test on the most frequent words
         target_w = [count[indexes[i]][0] for i in range(num_words)]
         w_dict   = create_testing_pairs(test_set,count,target_w,indexes,skip_window,true_neigh,false_neigh)
         return None,w_dict
@@ -296,7 +296,7 @@ def create_vocabulary(train_set, validation_set, test_set, mode, min_occurance,u
 
     
 
-def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "UNK", 
+def create_vocabulary_corpus(mode, skip_window=1,skip_window_t=1, min_occurance=1, unk_item = "UNK", 
                             true_neigh = 8, false_neigh = 30, valid_w=80,valid_w2=70,test_w=100):
 
     # load train, validation and testing set
@@ -328,26 +328,12 @@ def create_vocabulary_corpus(mode, skip_window=1, min_occurance=1, unk_item = "U
     # min_occur is hardcoded to 1, because it's
     # the optimal value.
     min_occur = 1
-    _,test_dict  = create_testing_dict(test_set_id,min_occur,test_w,0,true_neigh,false_neigh)
+    _,test_dict  = create_testing_dict(test_set_id,min_occur,test_w,0,true_neigh,false_neigh,skip_window=skip_window_t)
     save_test_pairs(test_dict,mode,'testing_pairs')
     del test_dict
 
     # create validation pairs
-    v_dict2,v_dict = create_testing_dict(valid_set_id,min_occur,valid_w,valid_w2,true_neigh,false_neigh)
+    v_dict2,v_dict = create_testing_dict(valid_set_id,min_occur,valid_w,valid_w2,true_neigh,false_neigh,skip_window=skip_window_t)
     
     save_test_pairs(v_dict , mode, 'validation_pairs')
     save_test_pairs(v_dict2, mode, 'validation2_pairs')
-
-def create_vocabulary_corpus_test(mode, skip_window=1, min_occurance=1, unk_item = "UNK", 
-                            true_neigh = 8, false_neigh = 30, valid_w=80,valid_w2=70,test_w=100):
-    
-    # load train, validation and testing set
-    train_set      = list()
-    validation_set = list()
-    test_set       = list()
-
-    train_set      = load_dataset(mode, 'train.json')
-    validation_set = load_dataset(mode, 'validation.json')
-    test_set       = load_dataset(mode, 'test.json')
-    print("done")
-

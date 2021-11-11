@@ -125,7 +125,7 @@ def clean_data(descriptions, stack_traces, use_stemming):
         
     return clean_descriptions,clean_stack_traces
 
-def bugs_preprocessing(use_stemming = True):
+def bugs_preprocessing(use_words, use_stacks,use_stemming = True):
 
     # load word embeddings
     word_embedding_matrix = np.loadtxt('../results/word_embeddings.txt', dtype=np.float64)
@@ -196,7 +196,7 @@ def bugs_preprocessing(use_stemming = True):
     del clean_stack_traces_2
 
     issues_embeddings  = compute_embeddings(arithmetic_descriptions,arithmetic_stack_traces,\
-        word_embedding_matrix,stack_embedding_matrix,False,True)
+        word_embedding_matrix,stack_embedding_matrix, use_words ,use_stacks)
     
     tag_labels = list()
     # copy by reference in order to avoid to change every where the variable name

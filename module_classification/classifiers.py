@@ -1,5 +1,5 @@
-import random
 import math
+import random
 import numpy as np
 import pandas as pd
 from sklearn import metrics
@@ -13,59 +13,6 @@ tf.compat.v1.disable_eager_execution()
 from tensorflow.keras import initializers
 from sklearn.model_selection import StratifiedShuffleSplit
 
-def my_dummy_classifier(tags,df_tags,issues_embeddings,cl_label,n_splits):
-    
-    target_label    = df_tags[cl_label]
-    dummy_clf       = DummyClassifier(strategy = "uniform",random_state=0)
-    total_confusion = np.zeros((2,2))
-    
-    # fit model 
-    dummy_clf.fit(issues_embeddings,target_label)
-    predictions = dummy_clf.predict(issues_embeddings)
-    total_confusion = confusion_matrix(target_label,predictions)
-
-    print(total_confusion)
-    print("accuracy = TP+TN/(TP+TN+FP+FN)",(total_confusion[0][0]+total_confusion[1][1])/np.sum(total_confusion))
-    print("geometric mean",np.sqrt((total_confusion[0][0]/(total_confusion[0][0]+total_confusion[0][1]))*
-                                  (total_confusion[1][1]/(total_confusion[1][1]+total_confusion[1][0]))))
-    print("\n")
-
-def my_classifier(tags,df_tags,issues_embeddings,cl_label,n_splits):
-    
-    target_label    = df_tags[cl_label]
-    counter_1       = np.sum(target_label)
-    weight_0        = 1/(target_label.shape[0]-counter_1)
-    weight_1        = 1/counter_1
-    w               = {0:weight_0,1:weight_1}
-    skf             = StratifiedKFold(n_splits)
-    model           = LogisticRegression(solver='lbfgs',class_weight = w)
-    total_confusion = np.zeros((2,2))
-    counter         = 0
-    auc             = 0
-    for train_index, test_index in skf.split(issues_embeddings,target_label):
-        
-        X_train,X_test = issues_embeddings[train_index], issues_embeddings[test_index]
-        y_train,y_test = target_label[train_index], target_label[test_index]
-        
-        #fit model 
-        model.fit(X_train,y_train)
-        predictions = model.predict(X_test)
-        
-        #print(confusion_matrix(y_test,predictions))
-        total_confusion = total_confusion+confusion_matrix(y_test,predictions)
-        
-        fpr,tpr,thresholds = metrics.roc_curve(y_test,model.predict_proba(X_test)[:,1])
-        
-        auc     = auc + metrics.auc(fpr,tpr)
-        counter = counter +1
-        
-    print(total_confusion)
-    print("accuracy = TP+TN/(TP+TN+FP+FN)",(total_confusion[0][0]+total_confusion[1][1])/np.sum(total_confusion))
-    print("GM",np.sqrt((total_confusion[0][0]/(total_confusion[0][0]+total_confusion[0][1]))*
-                                  (total_confusion[1][1]/(total_confusion[1][1]+total_confusion[1][0]))))
-    print("Pre", total_confusion[0][0]/(total_confusion[0][1]+total_confusion[0][0]))
-    print("AUC", auc/counter)
-    print("\n")
 
 def split_dataset2(issues_embeddings,target_labels,t_size =0.1):
     
@@ -221,6 +168,65 @@ def compute_predictions_voting(total_ypreds,total_nn):
     
     return ypreds
 
+# *** classifiers ***
+
+# dummy classifier
+def my_dummy_classifier(tags,df_tags,issues_embeddings,cl_label,n_splits):
+    
+    target_label    = df_tags[cl_label]
+    dummy_clf       = DummyClassifier(strategy = "uniform",random_state=0)
+    total_confusion = np.zeros((2,2))
+    
+    # fit model 
+    dummy_clf.fit(issues_embeddings,target_label)
+    predictions = dummy_clf.predict(issues_embeddings)
+    total_confusion = confusion_matrix(target_label,predictions)
+
+    print(total_confusion)
+    print("accuracy = TP+TN/(TP+TN+FP+FN)",(total_confusion[0][0]+total_confusion[1][1])/np.sum(total_confusion))
+    print("geometric mean",np.sqrt((total_confusion[0][0]/(total_confusion[0][0]+total_confusion[0][1]))*
+                                  (total_confusion[1][1]/(total_confusion[1][1]+total_confusion[1][0]))))
+    print("\n")
+
+# logistic regression
+def my_classifier(tags,df_tags,issues_embeddings,cl_label,n_splits):
+    
+    target_label    = df_tags[cl_label]
+    counter_1       = np.sum(target_label)
+    weight_0        = 1/(target_label.shape[0]-counter_1)
+    weight_1        = 1/counter_1
+    w               = {0:weight_0,1:weight_1}
+    skf             = StratifiedKFold(n_splits)
+    model           = LogisticRegression(solver='lbfgs',class_weight = w)
+    total_confusion = np.zeros((2,2))
+    counter         = 0
+    auc             = 0
+    for train_index, test_index in skf.split(issues_embeddings,target_label):
+        
+        X_train,X_test = issues_embeddings[train_index], issues_embeddings[test_index]
+        y_train,y_test = target_label[train_index], target_label[test_index]
+        
+        #fit model 
+        model.fit(X_train,y_train)
+        predictions = model.predict(X_test)
+        
+        #print(confusion_matrix(y_test,predictions))
+        total_confusion = total_confusion+confusion_matrix(y_test,predictions)
+        
+        fpr,tpr,thresholds = metrics.roc_curve(y_test,model.predict_proba(X_test)[:,1])
+        
+        auc     = auc + metrics.auc(fpr,tpr)
+        counter = counter +1
+        
+    print(total_confusion)
+    print("accuracy = TP+TN/(TP+TN+FP+FN)",(total_confusion[0][0]+total_confusion[1][1])/np.sum(total_confusion))
+    print("GM",np.sqrt((total_confusion[0][0]/(total_confusion[0][0]+total_confusion[0][1]))*
+                                  (total_confusion[1][1]/(total_confusion[1][1]+total_confusion[1][0]))))
+    print("Pre", total_confusion[0][0]/(total_confusion[0][1]+total_confusion[0][0]))
+    print("AUC", auc/counter)
+    print("\n")
+
+# fully connected 2 layers neural network
 def my_classifier_nn2(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
                       learning_rate,batch_size,epochs,v_batch,v_labels):
     
@@ -285,6 +291,7 @@ def my_classifier_nn2(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
     
     return compute_predictions(y_probs,v_labels)
 
+# fully connected 2 layers neural network & patience remaining
 def my_classifier_nn3(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
                       learning_rate,batch_size,v_batch,v_labels,t_batch,t_labels):
     
@@ -366,6 +373,7 @@ def my_classifier_nn3(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
         
     return compute_predictions(y_probs,t_labels)
 
+# fully connected 2 layers neural network with dropout layer
 def my_classifier_nn4(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
                       learning_rate,batch_size,epochs,v_batch,v_labels):
     
@@ -421,6 +429,7 @@ def my_classifier_nn4(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
     
     return compute_predictions(y_probs,v_labels)
 
+# fully connected 2 layers neural network with dropout layer & patience remaining
 def my_classifier_nn5(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
                       learning_rate,batch_size,v_batch,v_labels,t_batch,t_labels):
     
@@ -506,3 +515,48 @@ def my_classifier_nn5(issues_embeddings_0,issues_embeddings_1,hidden_layer_dim,
         y_probs     = sess.run(output_layer_2,feed_dict={X_train:t_batch,Y_train:t_labels})
     
     return compute_predictions(y_probs,t_labels)
+
+def run_classifiers(tags, df_tags, issues_embeddings):
+
+    # run dummy classifiers
+    for tag in tags:
+        print("run dummy classifier for tag:",tag)
+        my_dummy_classifier(tags,df_tags,issues_embeddings,tag)
+    
+    # run logistic regression
+    for tag in tags:
+        print("run logistic regression model for tag:", tag)
+        my_classifier(tags, df_tags, issues_embeddings, tag)
+
+    # run 5 neural network architecture with voting
+    
+    for tag in tags:
+        target_labels = df_tags[tag]
+        train_issues_0,train_issues_1,test_issues,test_labels = \
+            split_dataset2(issues_embeddings,target_labels,t_size=0.1)
+        
+        # create validation set
+        train_issues_0,train_issues_1,valid_issues,valid_labels = \
+            create_validation(train_issues_0,train_issues_1)
+
+        batch_size  = np.shape(train_issues_0)[0] \
+            if np.shape(train_issues_0)[0]<np.shape(train_issues_1)[0] else np.shape(train_issues_1)[0]  
+
+        t_batch,t_labels = generate_batch(test_issues,test_labels,np.shape(test_issues)[0])
+        v_batch,v_labels = generate_batch(valid_issues,valid_labels,np.shape(valid_issues)[0])
+        
+        total_nn       = 5
+        aucs           = np.zeros(total_nn)
+        total_ypreds_1 = np.zeros(shape = (np.shape(t_labels)[0],1), dtype = np.float64)
+
+        for i in range(total_nn):
+            
+            y_probs_1, y_preds_1, y_true_1, conf_matrix = my_classifier_nn3(train_issues_0,train_issues_1,4,0.01,\
+                2*batch_size,v_batch,v_labels,t_batch,t_labels)
+            
+            total_ypreds_1    = total_ypreds_1 + y_preds_1 
+            aucs[i]           = compute_auc(y_true_1,y_probs_1)
+        
+        y_preds1         = compute_predictions_voting(total_ypreds_1,total_nn)
+        matrix_confusion = metrics.confusion_matrix(y_true=y_true_1,y_pred=y_preds1)
+        compute_metrics(matrix_confusion,aucs)

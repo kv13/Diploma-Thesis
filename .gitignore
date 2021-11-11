@@ -2,10 +2,16 @@
 data/*
 data1/*
 data2/*
+spring/*
+elastic_search/*
 
 #exclude debugging files
 outputs/*
+outputs_project_2/*
+outputs_project_3/*
 results/*
+results_project_2/*
+results_project_3/*
 
 #exclude pycache files
 **/__pycache__

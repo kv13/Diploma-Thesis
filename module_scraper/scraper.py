@@ -1,17 +1,12 @@
 """
 
-*********************************************
-*      author:Konstantinos Vergopoulos      *
-*                 Jule,2021                 *
-*********************************************
-
 Scraper Module for scraping github repositories. It's focused on scraping issues only.
-The algorithm is looking for the name of the issue and possible tags it got, the description
-and the stack trace if it's given. Also it is looking for who opened it or who closed it 
+The algorithm is looking for the name of the issue, possible tags, the description
+and available stack trace. Also it is looking for who opened it or who closed it 
 if the issue is open or solved respectively. 
-It also includes __mane__ statement to give the choice to run as a standalone script
 
 """
+
 # import libraries
 import os
 import re
@@ -68,7 +63,7 @@ def search_all_page(stack_trace,page):
 
 def find_desc(each,base_url,description,stack_trace,is_bug):
 
-    next_url     = base_url+each.find('a')['href']
+    next_url     = base_url + each.find('a')['href']
     response     = requests.get(next_url)
     html_content = response.content
     dom          = BeautifulSoup(html_content,'html.parser')

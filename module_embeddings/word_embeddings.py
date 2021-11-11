@@ -15,30 +15,31 @@ from tensorflow.keras import layers
 from tensorflow.keras import initializers
 
 
-def save_logs(epoch,p_time,auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate):
-    with open("outputs/logs.txt","a") as file:
+def save_logs(mode,epoch,p_time,auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate):
+    file_name = "outputs/" + mode + "_logs.txt"
+    with open(file_name,"a") as file:
         file.write("parameter's value: min occurance %s, skip window %s, embedding dim %s, num sampled %s, learning rate %s \n"%(str(min_occurance),str(skip_window),str(embedding_dim),str(num_sampled),str(learning_rate)))
         file.write("total time in sec %s and total epochs %s \n"%(str(p_time),str(epoch)))
         file.write("Validation AUC: %s \n"%(str(auc)))
-        file.write("Testing AUC %s \n"%(str(t_auc)))
+        file.write("Testing AUC: %s \n"%(str(t_auc)))
 
 
-def save_embeddings(embedding_matrix):
+def save_embeddings(mode,embedding_matrix):
     # make sure the directory exists
     directory = "results"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    file_name = directory + '/' + 'word_embeddings.txt'
+    file_name = directory + '/' + mode + '_embeddings.txt'
     np.savetxt(file_name,embedding_matrix,fmt = '%.8f')
 
 
-def load_all_data():
-    corpus = vp.load_corpus('words')
+def load_all_data(mode):
+    corpus = vp.load_corpus(mode)
     corpus_indexes = [w for w in range(len(corpus))] 
 
     # load validation sets
-    v_dict  = vp.load_test_pairs('words','validation_pairs.pkl' )
-    v_dict2 = vp.load_test_pairs('words','validation2_pairs.pkl')
+    v_dict  = vp.load_test_pairs(mode, 'validation_pairs.pkl' )
+    v_dict2 = vp.load_test_pairs(mode, 'validation2_pairs.pkl')
     t_batch  = []
     t_label  = []
     for key in v_dict2:
@@ -50,9 +51,9 @@ def load_all_data():
     v_label = np.reshape(t_label,(len(t_label),1))
 
     # load testing set
-    testing_dict = vp.load_test_pairs('words','testing_pairs.pkl')
+    testing_dict = vp.load_test_pairs(mode,'testing_pairs.pkl')
     
-    vocab_dict      = vp.load_vocabulary('words')
+    vocab_dict      = vp.load_vocabulary(mode)
     vocabulary_size = len(vocab_dict)-1
 
     return corpus,corpus_indexes,vocabulary_size,v_dict,v_batch,v_label,testing_dict
@@ -160,7 +161,7 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
             _,train_loss = sess.run([train_opt,loss_func],feed_dict={X_train:batch_x, Y_train:batch_y})
             valid_loss   = sess.run(loss_func,feed_dict={X_train:v_batch, Y_train:v_labels})
             
-            patience_remaining    -= step
+            patience_remaining     = patience_remaining - step
             if valid_loss < min_loss:
                 min_loss           = valid_loss
                 patience_remaining = 100
@@ -187,7 +188,8 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
 def word_embeddings_creation(batch_size = 2048, skip_window=1, embedding_dim=64, num_sampled=64, learning_rate=0.1):
 
     # load all important data
-    corpus,corpus_indexes,vocabulary_size,v_dict,v_batch,v_label,testing_dict = load_all_data()
+    mode = 'words'
+    corpus,corpus_indexes,vocabulary_size,v_dict,v_batch,v_label,testing_dict = load_all_data(mode)
 
     # actual training
     print("training starts with parameters vocabulary size",vocabulary_size," skip_window:",
@@ -204,7 +206,7 @@ def word_embeddings_creation(batch_size = 2048, skip_window=1, embedding_dim=64,
     print("Words embeddings model AUC on test set:",t_auc)
 
     # save embeddings matrix
-    save_embeddings(embedding_matrix)
+    save_embeddings(mode,embedding_matrix)
 
 
 def hyper_parameters_estimation(batch_size = 2048):
@@ -245,8 +247,10 @@ def hyper_parameters_estimation(batch_size = 2048):
             corpus_indexes = [w for w in range(len(corpus))] 
             
             # compute testing and validation pairs based on test_set_id, valid_set_id
-            _,test_dict    = vp.create_testing_dict(test_set_id , 4, test_w , 0       , true_neigh, false_neigh)
-            v_dict2,v_dict = vp.create_testing_dict(valid_set_id, 4, valid_w, valid_w2, true_neigh, false_neigh)
+            # we can estimate parameters for choosing neighbors for testing.
+            # but for now we will hard coded at a specific values,which are optimal.
+            _,test_dict    = vp.create_testing_dict(test_set_id , 4, test_w , 0       , true_neigh, false_neigh,skip_window=1)
+            v_dict2,v_dict = vp.create_testing_dict(valid_set_id, 4, valid_w, valid_w2, true_neigh, false_neigh,skip_window=1)
 
             t_batch  = []
             t_label  = []
@@ -285,7 +289,7 @@ def hyper_parameters_estimation(batch_size = 2048):
                             b_num_sampled   = num_sampled
                             b_learning_rate = learning_rate
 
-                        save_logs(m_epoch,m_time,v_auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate)
+                        save_logs('words',m_epoch,m_time,v_auc,t_auc,min_occurance,skip_window,embedding_dim,num_sampled,learning_rate)
 
                 # sleep some time between neural network training to avoid overheating issues
                 time.sleep(60)

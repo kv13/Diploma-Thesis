@@ -116,7 +116,7 @@ def data_preprocessing(dir_path = 'data'):
     # load all issues descriptions
     load_data(raw_descriptions,dir_path)
 
-    # split and clean descriptions
+    # clean and split descriptions
     clean_descriptions = []
     clean_data(clean_descriptions,raw_descriptions)
     
@@ -124,9 +124,9 @@ def data_preprocessing(dir_path = 'data'):
     stemming_data(clean_descriptions)
 
     # split data set to train,validation and test set
-    # validation and test set would have 20% of total data.
+    # validation and test set would have 20% and 10% respectively  of total data.
     total_desc = len(clean_descriptions)
-    valid_size = int(0.3  * total_desc)
+    valid_size = int(0.2  * total_desc)
     test_size  = int(0.1  * total_desc)
 
     valid_set,test_set = split_dataset(clean_descriptions,valid_size,test_size,min_size)

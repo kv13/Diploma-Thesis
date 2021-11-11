@@ -71,7 +71,7 @@ def model_def_cpu(corpus_data,corpus_indexes,batch_size,skip_window,embedding_di
             _,train_loss = sess.run([train_opt,loss_func],feed_dict={X_train:batch_x, Y_train:batch_y})
             valid_loss   = sess.run(loss_func,feed_dict={X_train:v_batch, Y_train:v_labels})
             
-            patience_remaining     =patience_remaining - step
+            patience_remaining     = patience_remaining - step
             if valid_loss < min_loss:
                 min_loss           = valid_loss
                 patience_remaining = 100
@@ -130,7 +130,7 @@ def hyper_parameters_estimation(batch_size = 2048):
     false_neigh = 10
     valid_w     = 20
     valid_w2    = 40
-    test_w      = 20
+    test_w      = 30
     
     # initialize variables
     b_t_auc         = float('-inf')
@@ -160,8 +160,8 @@ def hyper_parameters_estimation(batch_size = 2048):
             corpus_indexes = [w for w in range(len(corpus))]
 
             # compute testing and validation pairs based on test_set_id, valid_set_id
-            _,test_dict    = vp.create_testing_dict(test_set_id , 1, test_w , 0       , true_neigh, false_neigh,skip_window=2)
-            v_dict2,v_dict = vp.create_testing_dict(valid_set_id, 1, valid_w, valid_w2, true_neigh, false_neigh,skip_window=2)
+            _,test_dict    = vp.create_testing_dict(test_set_id , 1, test_w , 0       , true_neigh, false_neigh,skip_window=1)
+            v_dict2,v_dict = vp.create_testing_dict(valid_set_id, 1, valid_w, valid_w2, true_neigh, false_neigh,skip_window=1)
 
             t_batch  = []
             t_label  = []
@@ -173,7 +173,7 @@ def hyper_parameters_estimation(batch_size = 2048):
             v_batch = np.reshape(t_batch,(len(t_batch),))
             v_label = np.reshape(t_label,(len(t_label),1))
 
-            for embedding_dim in [4,8,12,16]:
+            for embedding_dim in [4,8,16]:
                 for num_sampled in [16,32,64]:
                     for learning_rate in [0.01,0.1]:
 
