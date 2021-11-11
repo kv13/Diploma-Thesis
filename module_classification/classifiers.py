@@ -89,7 +89,7 @@ def create_validation(train_issues_0,train_issues_1,rate=0.2):
     validation_labels  = list()
     
     min_size = len(train_issues_0) if len(train_issues_0)<len(train_issues_1) else len(train_issues_1)
-    print(min_size)
+    
     validation_size_0 = int(min_size*rate)
     validation_size_1 = int(min_size*rate)
     
@@ -521,16 +521,17 @@ def run_classifiers(tags, df_tags, issues_embeddings):
     # run dummy classifiers
     for tag in tags:
         print("run dummy classifier for tag:",tag)
-        my_dummy_classifier(tags,df_tags,issues_embeddings,tag)
+        my_dummy_classifier(tags,df_tags,issues_embeddings,tag,10)
     
     # run logistic regression
     for tag in tags:
         print("run logistic regression model for tag:", tag)
-        my_classifier(tags, df_tags, issues_embeddings, tag)
+        my_classifier(tags, df_tags, issues_embeddings, tag, 10)
 
     # run 5 neural network architecture with voting
     
     for tag in tags:
+        print("neural network classifier for tag",tag)
         target_labels = df_tags[tag]
         train_issues_0,train_issues_1,test_issues,test_labels = \
             split_dataset2(issues_embeddings,target_labels,t_size=0.1)

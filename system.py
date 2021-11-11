@@ -20,13 +20,14 @@ Then, based on the decision, it will run the machine learning algorithms sequent
 """
 import numpy  as np
 import pandas as pd
-import module_classification as classifiers 
 from module_scraper        import scraper as scraper
+from module_classification import bug_embeddings as bm
 from module_embeddings     import word_embeddings as wm
 from module_embeddings     import stacktraces_embeddings as sm
 from module_preprocessing  import vocabulary_processes as vp
 from module_preprocessing  import descriptions_preprocessing as dp
 from module_preprocessing  import stacktraces_preprocessing  as sp
+from module_classification import classifiers as classifiers
 
 
 if __name__ == "__main__" :
@@ -34,7 +35,7 @@ if __name__ == "__main__" :
   # *** scraping  ***
   # github repository url
   query_url = f"https://github.com/cgeo/cgeo/issues?page=1&q=is%3Aissue+is%3Aclosed"
-  # scraping the github repo
+  #scraping the github repo
   scraper.initializing(query_url)
 
   # *** word embeddings ***
@@ -52,5 +53,5 @@ if __name__ == "__main__" :
   #sm.hyper_parameters_estimation()
 
   # run classifiers 
-  tags, df_tags, issues_embeddings = classifiers.bugs_preprocessing(use_words = True, use_stacks = True)
+  tags, df_tags, issues_embeddings = bm.bugs_preprocessing(use_words = True, use_stacks = True)
   classifiers.run_classifiers(tags, df_tags, issues_embeddings)

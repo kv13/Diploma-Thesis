@@ -128,10 +128,10 @@ def clean_data(descriptions, stack_traces, use_stemming):
 def bugs_preprocessing(use_words, use_stacks,use_stemming = True):
 
     # load word embeddings
-    word_embedding_matrix = np.loadtxt('../results/word_embeddings.txt', dtype=np.float64)
+    word_embedding_matrix = np.loadtxt('results/words_embeddings.txt', dtype=np.float64)
 
     # load stack traces embeddings 
-    stack_embedding_matrix = np.loadtxt('../results/funcs_embeddings.txt', dtype=np.float64)
+    stack_embedding_matrix = np.loadtxt('results/funcs_embeddings.txt', dtype=np.float64)
 
     # load vocabularies
 
@@ -207,7 +207,7 @@ def bugs_preprocessing(use_words, use_stacks,use_stemming = True):
     #tags = ['>test-failure','Team:Distributed','>bug',':Distributed/Snapshot/Restore']
     #tags = ['type: bug','for: stackoverflow','status: invalid','for: external-project']
     
-    no_tags = 4
+    no_tags = 3
     np_tags = np.zeros((len(arithmetic_descriptions),no_tags))
 
     for counter in range(len(tag_labels)):
