@@ -12,3 +12,9 @@ results/*
 
 #exclude jupyter's checkpoints
 **/.ipynb_checkpoints
+
+#exclude latex report
+thesis_latex/*
+
+#exclude jupyter notebooks
+temp/*
